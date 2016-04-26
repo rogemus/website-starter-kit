@@ -1,0 +1,26 @@
+{
+  "name": "website-starter-kit",
+  "version": "1.0.0",
+  "description": "Website Starter Kit with Sass and Jade",
+  "main": "build/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rogemus/website-starter-kit.git"
+  },
+  "author": "Kacper Rogowski",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-connect": "^3.2.2",
+    "gulp-jade": "^1.1.0",
+    "gulp-open": "^2.0.0",
+    "gulp-ruby-sass": "^2.0.6",
+    "gulp-sass": "^2.3.1",
+    "gulp-sourcemaps": "^2.0.0-alpha"
+  }
+}
