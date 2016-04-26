@@ -1,6 +1,6 @@
-== Website Starter Kit
+## Website Starter Kit
 
-## Paczki Grunt
+#### Paczki Grunt
 Aby pobrac wszystkie potrzebne skrypty nalezy posiadac GruntJS, a nastepnie uzyc komendy
   ```
   $ npm install
