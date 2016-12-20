@@ -1,19 +1,12 @@
 "use strick";
 
 var gulp = require('gulp');
-//Local dev server
 var connect = require('gulp-connect');
-//Open url in browser
 var open = require('gulp-open');
-//Concatenates files
-var concat = require('gulp-concat');
-//Transform SASS
-var sass = require('gulp-ruby-sass');
-var sourcemaps = require('gulp-sourcemaps');
+var sass = require('gulp-sass');
 var prefix = require('gulp-autoprefixer');
-//Transform JADE
+var concat = require('gulp-concat');
 var jade = require('gulp-jade');
-
 
 var config = {
     port: 3001,
@@ -21,22 +14,17 @@ var config = {
     paths: {
         html: './src/*.html',
         js: './src/scripts/**/*.js',
-        css: [
-            './src/css/**/*.css'
-        ],
+        jade: './src/jade/**/*.jade',
+        jadePage: './src/jade/2-pages/**/*.jade',
+        css: './src/css/**/*.css',
+        mainSass: './src/main.scss',
+        sass: './src/sass/**/*.scss',
         buildCss: './build/css',
-        mainSass: './src/main.sass',
-        sass: [
-            './src/**/*.sass'
-        ],
-        jade: [
-            './src/jade/2-pages/**/*.jade'
-        ],
         build: './build'
     }
 };
 
-gulp.task('connect', function () {
+gulp.task('connect', function() {
     connect.server({
         root: ['build'],
         port: config.port,
@@ -45,43 +33,61 @@ gulp.task('connect', function () {
     });
 });
 
-
-gulp.task('open', ['connect'], function () {
-    gulp.src('build/index.html')
-        .pipe(open({
-            uri: config.devBaseUrl + ':' + config.port + '/'
-        }));
+gulp.task('open', ['connect'], function() {
+    gulp.src('build/index.html').pipe(open({
+        uri: config.devBaseUrl + ':' + config.port + '/'
+    }));
 });
 
-gulp.task('html', function () {
+gulp.task('html', function() {
     gulp.src(config.paths.html)
         .pipe(gulp.dest(config.paths.build))
         .pipe(connect.reload());
 });
 
-gulp.task('sass', function () {
-    sass('src/sass/main.sass', {sourcemap: true, style: 'compact'})
-        .pipe(prefix("last 5 version", "> 1%", "ie 8", "ie 7"))
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(config.paths.buildCss));
+gulp.task('sass', function() {
+    gulp.src(config.paths.sass)
+        .pipe(sass().on('error', sass.logError))
+        .pipe(prefix({
+            browsers: ['last 2 versions'],
+            cascade: false
+        }))
+        .pipe(gulp.dest(config.paths.buildCss))
+        .pipe(connect.reload());
 });
 
-gulp.task('jade', function () {
+gulp.task('js', function() {
+    gulp.src(config.paths.js)
+        .pipe(gulp.dest(config.paths.build))
+        .pipe(connect.reload());
+});
+
+gulp.task('jade', function() {
     var YOUR_LOCALS = {};
 
-    gulp.src(config.paths.jade)
+    gulp.src(config.paths.jadePage)
         .pipe(jade({
             locals: YOUR_LOCALS,
             pretty: true
+        }).on('error', function(err) {
+            console.log(err)
         }))
-        .pipe(gulp.dest(config.paths.build));
+        .pipe(gulp.dest(config.paths.build))
+        .pipe(connect.reload());
 });
 
+gulp.task('concat', function() {
+    gulp.src(config.paths.js)
+        .pipe(concat('bundle.js'))
+        .pipe(gulp.dest(config.paths.build))
+        .pipe(connect.reload());
+});
 
-gulp.task('watch', function () {
+gulp.task('watch', function() {
     gulp.watch(config.paths.html, ['html']);
     gulp.watch(config.paths.sass, ['sass']);
     gulp.watch(config.paths.jade, ['jade']);
+    gulp.watch(config.paths.js, ['concat']);
 });
 
-gulp.task('default', ['html', 'sass', 'jade', 'open', 'watch']);
+gulp.task('default', ['open', 'watch', 'concat', 'html', 'sass', 'jade']);
