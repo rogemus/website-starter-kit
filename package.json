@@ -1,7 +1,7 @@
 {
   "name": "website-starter-kit",
   "version": "2.0.0",
-  "description": "Website Starter Kit with Sass and Pug",
+  "description": "Website Starter Kit with Sass and Jade",
   "main": "build/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
