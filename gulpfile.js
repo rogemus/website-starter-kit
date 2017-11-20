@@ -6,20 +6,24 @@ var open = require('gulp-open');
 var sass = require('gulp-sass');
 var prefix = require('gulp-autoprefixer');
 var concat = require('gulp-concat');
-var jade = require('gulp-jade');
+var pug = require('gulp-pug');
 
 var config = {
     port: 3001,
     devBaseUrl: 'http:localhost',
     paths: {
         html: './src/*.html',
+        img: ['./src/img/**/*.png', './src/img/**/*.jpg', './src/img/**/*.gif', './src/img/**/*.jpeg'],
         js: './src/scripts/**/*.js',
-        jade: './src/jade/**/*.jade',
-        jadePage: './src/jade/2-pages/**/*.jade',
+        pug: './src/pug/**/*.pug',
+        pugPath: './src/pug/3-pages/**/*.pug',
         css: './src/css/**/*.css',
         mainSass: './src/main.scss',
         sass: './src/sass/**/*.scss',
+        fonts: './src/fonts/**/*',
         buildCss: './build/css',
+        buildImg: './build/img',
+        buildFonts: './build/fonts',
         build: './build'
     }
 };
@@ -31,6 +35,17 @@ gulp.task('connect', function() {
         base: config.devBaseUrl,
         livereload: true
     });
+});
+
+
+gulp.task('images', function() {
+    gulp.src(config.paths.img)
+        .pipe(gulp.dest(config.paths.buildImg))
+});
+
+gulp.task('fonts', function() {
+    return gulp.src(config.paths.fonts)
+        .pipe(gulp.dest(config.paths.buildFonts));
 });
 
 gulp.task('open', ['connect'], function() {
@@ -62,16 +77,12 @@ gulp.task('js', function() {
         .pipe(connect.reload());
 });
 
-gulp.task('jade', function() {
-    var YOUR_LOCALS = {};
 
-    gulp.src(config.paths.jadePage)
-        .pipe(jade({
-            locals: YOUR_LOCALS,
-            pretty: true
-        }).on('error', function(err) {
+gulp.task('pug', function buildHTML() {
+    return gulp.src(config.paths.pugPath)
+        .pipe(pug()).on('error', function(err) {
             console.log(err)
-        }))
+        })
         .pipe(gulp.dest(config.paths.build))
         .pipe(connect.reload());
 });
@@ -86,8 +97,11 @@ gulp.task('concat', function() {
 gulp.task('watch', function() {
     gulp.watch(config.paths.html, ['html']);
     gulp.watch(config.paths.sass, ['sass']);
-    gulp.watch(config.paths.jade, ['jade']);
+    gulp.watch(config.paths.pug, ['pug']);
     gulp.watch(config.paths.js, ['concat']);
+    gulp.watch(config.paths.img, ['images']);
 });
 
-gulp.task('default', ['open', 'watch', 'concat', 'html', 'sass', 'jade']);
+gulp.task('build', ['concat', 'html', 'sass', 'pug', 'fonts', 'images']);
+
+gulp.task('default', ['open', 'watch', 'build']);
