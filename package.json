@@ -14,12 +14,12 @@
   "author": "Kacper Rogowski",
   "license": "ISC",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^4.0.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-connect": "^5.0.0",
-    "gulp-open": "^2.0.0",
-    "gulp-pug": "^3.3.0",
-    "gulp-sass": "^3.1.0"
+    "gulp": "3.9.1",
+    "gulp-autoprefixer": "4.1.0",
+    "gulp-concat": "2.6.1",
+    "gulp-connect": "5.5.0",
+    "gulp-open": "2.1.0",
+    "gulp-pug": "3.3.0",
+    "gulp-sass": "3.2.1"
   }
 }
