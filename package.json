@@ -18,7 +18,7 @@
     "gulp-autoprefixer": "5.0.0",
     "gulp-concat": "2.6.1",
     "gulp-connect": "5.5.0",
-    "gulp-open": "2.1.0",
+    "gulp-open": "3.0.1",
     "gulp-pug": "3.3.0",
     "gulp-sass": "3.2.1"
   }
