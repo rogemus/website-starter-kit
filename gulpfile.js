@@ -1,107 +1,85 @@
-"use strick";
+const { series, watch, src, dest, parallel } = require('gulp');
+const postcss = require('gulp-postcss');
+const pug = require('gulp-pug');
+const connect = require('gulp-connect');
+const atImport = require('postcss-import');
+const del = require('del');
 
-var gulp = require('gulp');
-var connect = require('gulp-connect');
-var open = require('gulp-open');
-var sass = require('gulp-sass');
-var prefix = require('gulp-autoprefixer');
-var concat = require('gulp-concat');
-var pug = require('gulp-pug');
-
-var config = {
-    port: 3001,
-    devBaseUrl: 'http:localhost',
-    paths: {
-        html: './src/*.html',
-        img: ['./src/img/**/*.png', './src/img/**/*.jpg', './src/img/**/*.gif', './src/img/**/*.jpeg'],
-        js: './src/scripts/**/*.js',
-        pug: './src/pug/**/*.pug',
-        pugPath: './src/pug/3-pages/**/*.pug',
-        css: './src/css/**/*.css',
-        mainSass: './src/main.scss',
-        sass: './src/sass/**/*.scss',
-        fonts: './src/fonts/**/*',
-        buildCss: './build/css',
-        buildImg: './build/img',
-        buildFonts: './build/fonts',
-        build: './build'
-    }
+const config = {
+	devserver: {
+		port: 3001,
+	},
+	paths: {
+		src: {
+			css: './src/css/**/main.css',
+			js: './src/js/**/*.js',
+			fonts: './src/fonts/**/*',
+			pug: './src/pug/3-pages/**/*.pug',
+			assets: './src/assets/**/*'
+		},
+		build: {
+			css: './build/css',
+			js: './build/js',
+			assets: './build/assets',
+			fonts: './build/fonts',
+			main: './build'
+		}
+	}
 };
 
-gulp.task('connect', function() {
-    connect.server({
-        root: ['build'],
-        port: config.port,
-        base: config.devBaseUrl,
-        livereload: true
-    });
-});
+const assets = () => (
+	src(config.paths.src.assets)
+		.pipe(dest(config.paths.build.assets))
+		.pipe(connect.reload())
+);
 
+const fonts = () => (
+	src(config.paths.src.fonts)
+		.pipe(dest(config.paths.build.fonts))
+		.pipe(connect.reload())
+);
 
-gulp.task('images', function() {
-    gulp.src(config.paths.img)
-        .pipe(gulp.dest(config.paths.buildImg))
-});
+const js = () => (
+	src(config.paths.src.js)
+		.pipe(dest(config.paths.build.js))
+		.pipe(connect.reload())
+);
 
-gulp.task('fonts', function() {
-    return gulp.src(config.paths.fonts)
-        .pipe(gulp.dest(config.paths.buildFonts));
-});
+const css = () => (
+	src(config.paths.src.css)
+		.pipe(postcss([
+			atImport()
+		]))
+		.pipe(dest(config.paths.build.css))
+		.pipe(connect.reload())
+);
 
-gulp.task('open', ['connect'], function() {
-    gulp.src('build/index.html').pipe(open({
-        uri: config.devBaseUrl + ':' + config.port + '/'
-    }));
-});
+const html = () => (
+	src(config.paths.src.pug)
+		.pipe(pug()).on('error', (err) => {
+			console.log(err)
+		})
+		.pipe(dest(config.paths.build.main))
+		.pipe(connect.reload())
+);
 
-gulp.task('html', function() {
-    gulp.src(config.paths.html)
-        .pipe(gulp.dest(config.paths.build))
-        .pipe(connect.reload());
-});
+const clean = () => (
+	del(config.paths.build.main)
+);
 
-gulp.task('sass', function() {
-    gulp.src(config.paths.sass)
-        .pipe(sass().on('error', sass.logError))
-        .pipe(prefix({
-            browsers: ['last 2 versions'],
-            cascade: false
-        }))
-        .pipe(gulp.dest(config.paths.buildCss))
-        .pipe(connect.reload());
-});
+const devserver = () => (
+	connect.server({
+		root: config.paths.build.main,
+		port: config.devserver.port,
+		livereload: true
+	})
+);
 
-gulp.task('js', function() {
-    gulp.src(config.paths.js)
-        .pipe(gulp.dest(config.paths.build))
-        .pipe(connect.reload());
-});
+const watchFiles = () => {
+	watch(config.paths.src.js, { ignoreInitial: false }, js);
+	watch(config.paths.src.pug, { ignoreInitial: false }, html);
+	watch(config.paths.src.css, { ignoreInitial: false }, css);
+};
 
-
-gulp.task('pug', function buildHTML() {
-    return gulp.src(config.paths.pugPath)
-        .pipe(pug()).on('error', function(err) {
-            console.log(err)
-        })
-        .pipe(gulp.dest(config.paths.build))
-        .pipe(connect.reload());
-});
-
-gulp.task('concat', function() {
-    gulp.src(config.paths.js)
-        .pipe(concat('bundle.js'))
-        .pipe(gulp.dest(config.paths.build))
-        .pipe(connect.reload());
-});
-
-gulp.task('watch', function() {
-    gulp.watch(config.paths.html, ['html']);
-    gulp.watch(config.paths.sass, ['sass']);
-    gulp.watch(config.paths.pug, ['pug']);
-    gulp.watch(config.paths.js, ['concat']);
-    gulp.watch(config.paths.img, ['images']);
-});
-
-gulp.task('build', ['concat', 'html', 'sass', 'pug', 'fonts', 'images']);
-
-gulp.task('default', ['open', 'watch', 'build']);
+exports.build = series(clean, fonts, assets, css, js, html)
+exports.default = series(clean, fonts, assets, parallel(devserver, watchFiles));
